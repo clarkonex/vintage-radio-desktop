@@ -2,9 +2,11 @@
 
 A retro-style internet radio player with a beautiful vintage UI.
 
+![Vintage Radio Screenshot](screenshot.png)
+
 ## Features
 
-- **10 Pre-loaded Stations** — SomaFM, KEXP, Jazz24, Radio Paradise, FIP, BBC Radio 6 Music
+- **24 Pre-loaded Stations** — Jazz, Vintage, Funk & Groove, World Music
 - **8 Beautiful Themes** — Bakelite, Retro, Mint, Synthwave, Dracula, Gruvbox, Nord, Vintage Cream
 - **Real-time VU Meters** — Audio visualization with Web Audio API
 - **CRT Monitor Effect** — Vignette and rounded bezel for authentic retro feel
