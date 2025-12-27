@@ -2,16 +2,34 @@
 
 // ===== DEFAULT STATIONS =====
 const DEFAULT_STATIONS = [
-  { name: "SomaFM Groove Salad", url: "https://ice1.somafm.com/groovesalad-128-mp3" },
-  { name: "SomaFM Drone Zone", url: "https://ice1.somafm.com/dronezone-128-mp3" },
-  { name: "SomaFM Secret Agent", url: "https://ice1.somafm.com/secretagent-128-mp3" },
-  { name: "SomaFM Lush", url: "https://ice1.somafm.com/lush-128-mp3" },
-  { name: "SomaFM DEF CON", url: "https://ice1.somafm.com/defcon-128-mp3" },
-  { name: "KEXP Seattle", url: "https://live-mp3-128.kexp.org/kexp128.mp3" },
-  { name: "Jazz24", url: "https://live.wostreaming.net/direct/ppm-jazz24mp3-ibc1" },
-  { name: "Radio Paradise", url: "https://stream.radioparadise.com/aac-320" },
-  { name: "FIP Radio", url: "https://icecast.radiofrance.fr/fip-midfi.mp3" },
-  { name: "BBC Radio 6 Music", url: "https://stream.live.vc.bbcmedia.co.uk/bbc_6music" }
+  // JAZZ
+  { name: "Jazz Underground", url: "https://icecast.walmradio.com:8443/jazz" },
+  { name: "Swiss Jazz", url: "http://stream.srg-ssr.ch/m/rsj/mp3_128" },
+  { name: "Classic Jazz", url: "http://jazz-wr01.ice.infomaniak.ch/jazz-wr01-128.mp3" },
+  { name: "Instrumental Jazz", url: "https://jfm1.hostingradio.ru:14536/ijstream.mp3" },
+  { name: "Jazz Lounge Bar", url: "https://cast1.torontocast.com:4640/stream" },
+  { name: "Jazz Sakura", url: "http://kathy.torontocast.com:3330/stream/1/" },
+  { name: "Jazz London", url: "http://radio.canstream.co.uk:8075/live.mp3" },
+  { name: "Jazz Berlin", url: "https://streaming.radio.co/s774887f7b/listen" },
+  { name: "Jazz Groove-East", url: "http://east-mp3-128.streamthejazzgroove.com/stream" },
+  { name: "Tropical Jazz", url: "https://servidor32-3.brlogic.com:8230/live" },
+  { name: "WDCB Chicago", url: "http://wdcb-ice.streamguys.org/wdcb128" },
+  { name: "Cool Jazz Florida", url: "http://162.244.80.20:6948/" },
+  { name: "Radio Caprise-Dark Jazz", url: "http://79.120.39.202:9137/" },
+  { name: "Sublime Jazz", url: "https://stream.sublime.nl/web21_mp3" },
+  // VINTAGE & RETRO
+  { name: "The 1920s Radio Network", url: "http://kara.fast-serv.com:8358/listen.pls" },
+  { name: "1940s Radio", url: "https://cast2.asurahosting.com/proxy/1940sradio/stream" },
+  { name: "Classic Radio NSW", url: "http://stream.zeno.fm/wbb1hramzd0uv" },
+  // FUNK & GROOVE
+  { name: "Funky Radio Italy", url: "https://funkyradio.streamingmedia.it/play.mp3" },
+  { name: "Trip Hop Radio", url: "http://79.111.14.76:8002/triphop" },
+  { name: "Rocksteady Radio", url: "https://mpc1.mediacp.eu:8356/stream" },
+  // WORLD & MIXED
+  { name: "TorontoCast Radio", url: "https://cast1.torontocast.com:4490/;" },
+  { name: "Harmony FM", url: "http://mp3.harmonyfm.de/harmonyfm/hqlivestream.mp3" },
+  { name: "Savage Radio", url: "http://188.40.97.185:8179/stream" },
+  { name: "Shonan Beach FM", url: "http://shonanbeachfm.out.airtime.pro:8000/shonanbeachfm_a" }
 ];
 
 // ===== THEMES =====
