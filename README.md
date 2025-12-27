@@ -2,6 +2,8 @@
 
 A retro-style internet radio player with a beautiful vintage UI.
 
+**Available for macOS, Linux, and Windows**
+
 ![Vintage Radio Screenshot](screenshot.png)
 
 ## Features
@@ -15,10 +17,24 @@ A retro-style internet radio player with a beautiful vintage UI.
 
 ## Installation
 
-### macOS
-Download the `.dmg` from [Releases](../../releases), open it, and drag Vintage Radio to Applications.
+Download the latest version from [Releases](../../releases).
 
-> **Note:** On first launch, you may need to right-click → Open → "Open" to bypass Gatekeeper.
+### macOS
+- **Apple Silicon (M1/M2/M3):** `Vintage.Radio_x.x.x_aarch64.dmg`
+- **Intel:** `Vintage.Radio_x.x.x_x64.dmg`
+
+Open the `.dmg` and drag Vintage Radio to Applications.
+
+> **Note:** On first launch, right-click → Open → "Open" to bypass Gatekeeper.
+
+### Linux
+- **AppImage:** `Vintage.Radio_x.x.x_amd64.AppImage` — Run directly, no installation needed
+- **Debian/Ubuntu:** `Vintage.Radio_x.x.x_amd64.deb` — Install with `sudo dpkg -i`
+- **Fedora/RHEL:** `Vintage.Radio_x.x.x.x86_64.rpm` — Install with `sudo rpm -i`
+
+### Windows
+- **Installer:** `Vintage.Radio_x.x.x_x64-setup.exe` — Standard Windows installer
+- **MSI:** `Vintage.Radio_x.x.x_x64_en-US.msi` — For enterprise deployment
 
 ### Build from Source
 
