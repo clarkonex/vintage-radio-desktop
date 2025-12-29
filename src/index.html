@@ -9,13 +9,10 @@
   </head>
 
   <body data-theme="bakelite">
-    <!-- CRT Screen Container -->
     <div class="crt-screen">
       <div class="crt-overlay"></div>
 
-      <!-- Radio Container -->
       <div class="radio-container">
-        <!-- Header -->
         <header class="radio-header">
           <span class="radio-title">~ R A D I O ~</span>
           <div class="header-controls">
@@ -24,11 +21,8 @@
           </div>
         </header>
 
-        <!-- Main Body -->
         <div class="radio-body">
-          <!-- Left Panel -->
           <div class="left-panel">
-            <!-- Display Area -->
             <div class="display-area">
               <div class="vu-meter" id="vu-left">
                 <div class="vu-bar" data-level="5"></div>
@@ -40,6 +34,11 @@
 
               <div class="display-center">
                 <div id="station-name" class="station-name">Select a station</div>
+                
+                <div class="now-playing-container">
+                  <div id="now-playing" class="now-playing-text"></div>
+                </div>
+
                 <div class="display-info">
                   <span id="play-time">00:00</span>
                   <span id="volume-display">VOL: 60%</span>
@@ -56,7 +55,6 @@
               </div>
             </div>
 
-            <!-- Controls -->
             <div class="controls">
               <button id="prev-btn" class="control-btn" title="Previous (P)">|&lt;&lt;</button>
               <button id="play-btn" class="control-btn play" title="Play/Pause (Space)">&gt; PLAY</button>
@@ -64,19 +62,16 @@
               <button id="next-btn" class="control-btn" title="Next (N)">&gt;&gt;|</button>
             </div>
 
-            <!-- Volume Slider -->
             <div class="volume-control">
               <span class="volume-label">VOLUME</span>
               <input type="range" id="volume-slider" min="0" max="100" value="60" />
             </div>
 
-            <!-- Playlist -->
             <div class="playlist-container">
               <div id="playlist" class="playlist"></div>
             </div>
           </div>
 
-          <!-- Speaker Panel -->
           <div class="speaker-panel">
             <div class="speaker-frame">
               <div class="speaker-grill" id="speaker-grill"></div>
@@ -84,7 +79,6 @@
           </div>
         </div>
 
-        <!-- Footer -->
         <footer class="radio-footer">
           <span>[Space] Play/Pause</span>
           <span>[N/P] Next/Prev</span>
@@ -94,7 +88,6 @@
       </div>
     </div>
 
-    <!-- Hidden Audio Element -->
     <audio id="audio-player" crossorigin="anonymous"></audio>
   </body>
 </html>
