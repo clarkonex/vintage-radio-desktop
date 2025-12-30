@@ -49,7 +49,7 @@ const state = {
 };
 
 // ===== DOM ELEMENTS =====
-let audioPlayer, playlist, stationName, playTime, volumeDisplay, statusEl;
+let audioPlayer, playlist, stationName, playTime, volumeDisplay, statusEl, nowPlayingEl;
 let playBtn, stopBtn, prevBtn, nextBtn, themeBtn, exitBtn, volumeSlider;
 let vuLeft, vuRight, speakerGrill;
 
@@ -59,6 +59,7 @@ function init() {
   audioPlayer = document.getElementById('audio-player');
   playlist = document.getElementById('playlist');
   stationName = document.getElementById('station-name');
+  nowPlayingEl = document.getElementById('now-playing'); // New element
   playTime = document.getElementById('play-time');
   volumeDisplay = document.getElementById('volume-display');
   statusEl = document.getElementById('status');
@@ -77,6 +78,13 @@ function init() {
 
   // Set up event listeners
   setupEventListeners();
+
+  // Listen for metadata updates from Rust backend
+  if (window.__TAURI__) {
+      window.__TAURI__.event.listen('metadata-update', (event) => {
+          updateNowPlaying(event.payload);
+      });
+  }
 
   // Load preferences
   loadPreferences();
@@ -150,6 +158,7 @@ function playStation(index) {
 
   // Update UI
   stationName.textContent = station.name;
+  updateNowPlaying("Loading info..."); // Reset now playing text
   setStatus('connecting');
 
   // Start playback
@@ -159,6 +168,12 @@ function playStation(index) {
     console.error('Playback failed:', e);
     setStatus('stopped');
   });
+
+  // Start metadata listener in backend
+  if (window.__TAURI__) {
+    window.__TAURI__.core.invoke('start_metadata_listener', { url: station.url })
+        .catch(e => console.error("Metadata listener error:", e));
+  }
 
   state.playStartTime = Date.now();
   renderPlaylist();
@@ -172,6 +187,7 @@ function stop() {
   setStatus('stopped');
   playTime.textContent = '00:00';
   stationName.textContent = 'Select a station';
+  updateNowPlaying(""); // Clear now playing text
 }
 
 function prevStation() {
@@ -216,6 +232,12 @@ function onError(e) {
 function setStatus(status) {
   statusEl.className = 'status ' + status;
   statusEl.textContent = status.toUpperCase();
+}
+
+function updateNowPlaying(text) {
+  if (nowPlayingEl) {
+    nowPlayingEl.textContent = text;
+  }
 }
 
 function updatePlayTime() {
