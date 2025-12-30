@@ -44,6 +44,7 @@ const state = {
   theme: 'bakelite',
   playStartTime: null,
   audioContext: null,
+  gainNode: null,
   analyser: null,
   dataArray: null
 };
@@ -81,9 +82,9 @@ function init() {
 
   // Listen for metadata updates from Rust backend
   if (window.__TAURI__) {
-      window.__TAURI__.event.listen('metadata-update', (event) => {
-          updateNowPlaying(event.payload);
-      });
+    window.__TAURI__.event.listen('metadata-update', (event) => {
+      updateNowPlaying(event.payload);
+    });
   }
 
   // Load preferences
@@ -129,12 +130,15 @@ function initAudioContext() {
 
   try {
     state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    state.gainNode = state.audioContext.createGain();   // gainNode is used to change volume of Web Audio
+    state.gainNode.gain.value = state.volume / 100;
     state.analyser = state.audioContext.createAnalyser();
     state.analyser.fftSize = 256;
     state.dataArray = new Uint8Array(state.analyser.frequencyBinCount);
 
     const source = state.audioContext.createMediaElementSource(audioPlayer);
-    source.connect(state.analyser);
+    source.connect(state.gainNode);
+    state.gainNode.connect(state.analyser);
     state.analyser.connect(state.audioContext.destination);
   } catch (e) {
     console.warn('Could not initialize audio context:', e);
@@ -164,6 +168,7 @@ function playStation(index) {
   // Start playback
   audioPlayer.src = station.url;
   audioPlayer.volume = state.volume / 100;
+  applyVolume();
   audioPlayer.play().catch(e => {
     console.error('Playback failed:', e);
     setStatus('stopped');
@@ -172,7 +177,7 @@ function playStation(index) {
   // Start metadata listener in backend
   if (window.__TAURI__) {
     window.__TAURI__.core.invoke('start_metadata_listener', { url: station.url })
-        .catch(e => console.error("Metadata listener error:", e));
+      .catch(e => console.error("Metadata listener error:", e));
   }
 
   state.playStartTime = Date.now();
@@ -253,9 +258,16 @@ function updateVolumeDisplay() {
   volumeDisplay.textContent = `VOL: ${state.volume}%`;
 }
 
+function applyVolume() {
+  if (state.gainNode) {
+    state.gainNode.gain.value = state.volume / 100;
+  }
+}
+
 function handleVolumeChange(e) {
   state.volume = parseInt(e.target.value);
   audioPlayer.volume = state.volume / 100;
+  applyVolume();
   updateVolumeDisplay();
   savePreferences();
 }
@@ -380,6 +392,7 @@ function handleKeyboard(e) {
       state.volume = Math.min(100, state.volume + 5);
       volumeSlider.value = state.volume;
       audioPlayer.volume = state.volume / 100;
+      applyVolume();
       updateVolumeDisplay();
       savePreferences();
       break;
@@ -388,6 +401,7 @@ function handleKeyboard(e) {
       state.volume = Math.max(0, state.volume - 5);
       volumeSlider.value = state.volume;
       audioPlayer.volume = state.volume / 100;
+      applyVolume();
       updateVolumeDisplay();
       savePreferences();
       break;
@@ -428,6 +442,8 @@ function loadPreferences() {
       if (prefs.volume !== undefined) {
         state.volume = prefs.volume;
         volumeSlider.value = prefs.volume;
+        audioPlayer.volume = state.volume / 100;
+        applyVolume();
       }
 
       if (prefs.currentIndex !== undefined) {
