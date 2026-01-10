@@ -45,13 +45,26 @@ const state = {
   playStartTime: null,
   audioContext: null,
   analyser: null,
-  dataArray: null
+  dataArray: null,
+  // 1937 Radio Filters
+  vintageFiltersEnabled: true,
+  vintageIntensity: 70, // 0-100
+  filterNodes: {
+    source: null,
+    highpass: null,
+    lowpass: null,
+    distortion: null,
+    compressor: null,
+    noiseGain: null,
+    noiseSource: null
+  }
 };
 
 // ===== DOM ELEMENTS =====
 let audioPlayer, playlist, stationName, playTime, volumeDisplay, statusEl, nowPlayingEl;
 let playBtn, stopBtn, prevBtn, nextBtn, themeBtn, exitBtn, volumeSlider;
 let vuLeft, vuRight, speakerGrill;
+let vintageToggle, intensitySlider, intensityDisplay;
 
 // ===== INITIALIZATION =====
 function init() {
@@ -76,6 +89,10 @@ function init() {
   vuRight = document.getElementById('vu-right');
   speakerGrill = document.getElementById('speaker-grill');
 
+  vintageToggle = document.getElementById('vintage-toggle');
+  intensitySlider = document.getElementById('intensity-slider');
+  intensityDisplay = document.getElementById('intensity-display');
+
   // Set up event listeners
   setupEventListeners();
 
@@ -93,6 +110,8 @@ function init() {
   renderPlaylist();
   renderSpeakerGrill();
   updateVolumeDisplay();
+  updateIntensityDisplay();
+  updateVintageToggleUI();
 
   // Start timers
   setInterval(updatePlayTime, 1000);
@@ -110,6 +129,10 @@ function setupEventListeners() {
 
   // Volume
   volumeSlider.addEventListener('input', handleVolumeChange);
+
+  // Vintage Filters
+  vintageToggle.addEventListener('click', toggleVintageFilters);
+  intensitySlider.addEventListener('input', handleIntensityChange);
 
   // Audio events
   audioPlayer.addEventListener('playing', onPlaying);
@@ -133,11 +156,202 @@ function initAudioContext() {
     state.analyser.fftSize = 256;
     state.dataArray = new Uint8Array(state.analyser.frequencyBinCount);
 
-    const source = state.audioContext.createMediaElementSource(audioPlayer);
-    source.connect(state.analyser);
-    state.analyser.connect(state.audioContext.destination);
+    // Create source
+    state.filterNodes.source = state.audioContext.createMediaElementSource(audioPlayer);
+
+    // Create 1937 Radio Filter Chain
+    create1937Filters();
+
+    // Connect audio chain
+    connectAudioChain();
   } catch (e) {
     console.warn('Could not initialize audio context:', e);
+  }
+}
+
+// ===== 1937 RADIO FILTERS =====
+function create1937Filters() {
+  const ctx = state.audioContext;
+
+  // 1. High-pass filter at 300 Hz (remove low rumble)
+  state.filterNodes.highpass = ctx.createBiquadFilter();
+  state.filterNodes.highpass.type = 'highpass';
+  state.filterNodes.highpass.frequency.value = 300;
+  state.filterNodes.highpass.Q.value = 0.7;
+
+  // 2. Low-pass filter at 3000 Hz (authentic AM radio bandwidth)
+  state.filterNodes.lowpass = ctx.createBiquadFilter();
+  state.filterNodes.lowpass.type = 'lowpass';
+  state.filterNodes.lowpass.frequency.value = 3000;
+  state.filterNodes.lowpass.Q.value = 0.7;
+
+  // 3. Tube distortion using WaveShaper
+  state.filterNodes.distortion = ctx.createWaveShaper();
+  state.filterNodes.distortion.curve = makeDistortionCurve(40); // subtle distortion
+  state.filterNodes.distortion.oversample = '4x';
+
+  // 4. Compressor (for dynamic range limiting, typical of old radios)
+  state.filterNodes.compressor = ctx.createDynamicsCompressor();
+  state.filterNodes.compressor.threshold.value = -24;
+  state.filterNodes.compressor.knee.value = 30;
+  state.filterNodes.compressor.ratio.value = 12;
+  state.filterNodes.compressor.attack.value = 0.003;
+  state.filterNodes.compressor.release.value = 0.25;
+
+  // 5. Background static/noise
+  createBackgroundNoise();
+}
+
+function makeDistortionCurve(amount) {
+  const k = typeof amount === 'number' ? amount : 50;
+  const samples = 44100;
+  const curve = new Float32Array(samples);
+  const deg = Math.PI / 180;
+
+  for (let i = 0; i < samples; i++) {
+    const x = (i * 2) / samples - 1;
+    curve[i] = ((3 + k) * x * 20 * deg) / (Math.PI + k * Math.abs(x));
+  }
+
+  return curve;
+}
+
+function createBackgroundNoise() {
+  const ctx = state.audioContext;
+  const bufferSize = ctx.sampleRate * 2; // 2 seconds of noise
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+
+  // Generate pink noise (more natural than white noise)
+  let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+  for (let i = 0; i < bufferSize; i++) {
+    const white = Math.random() * 2 - 1;
+    b0 = 0.99886 * b0 + white * 0.0555179;
+    b1 = 0.99332 * b1 + white * 0.0750759;
+    b2 = 0.96900 * b2 + white * 0.1538520;
+    b3 = 0.86650 * b3 + white * 0.3104856;
+    b4 = 0.55000 * b4 + white * 0.5329522;
+    b5 = -0.7616 * b5 - white * 0.0168980;
+    data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;
+    b6 = white * 0.115926;
+  }
+
+  // Create looping noise source
+  state.filterNodes.noiseSource = ctx.createBufferSource();
+  state.filterNodes.noiseSource.buffer = buffer;
+  state.filterNodes.noiseSource.loop = true;
+
+  // Gain for noise (very quiet background)
+  state.filterNodes.noiseGain = ctx.createGain();
+  updateVintageIntensity(); // Set initial gain based on intensity
+
+  // Connect noise: source -> gain -> destination
+  state.filterNodes.noiseSource.connect(state.filterNodes.noiseGain);
+  state.filterNodes.noiseGain.connect(state.audioContext.destination);
+
+  // Start noise
+  state.filterNodes.noiseSource.start(0);
+}
+
+function connectAudioChain() {
+  const nodes = state.filterNodes;
+
+  if (state.vintageFiltersEnabled) {
+    // Full vintage filter chain:
+    // source -> highpass -> lowpass -> distortion -> compressor -> analyser -> destination
+    nodes.source.connect(nodes.highpass);
+    nodes.highpass.connect(nodes.lowpass);
+    nodes.lowpass.connect(nodes.distortion);
+    nodes.distortion.connect(nodes.compressor);
+    nodes.compressor.connect(state.analyser);
+    state.analyser.connect(state.audioContext.destination);
+  } else {
+    // Bypass filters (clean audio)
+    nodes.source.connect(state.analyser);
+    state.analyser.connect(state.audioContext.destination);
+  }
+}
+
+function reconnectAudioChain() {
+  // Disconnect all
+  const nodes = state.filterNodes;
+  try {
+    nodes.source.disconnect();
+    if (nodes.highpass) nodes.highpass.disconnect();
+    if (nodes.lowpass) nodes.lowpass.disconnect();
+    if (nodes.distortion) nodes.distortion.disconnect();
+    if (nodes.compressor) nodes.compressor.disconnect();
+    state.analyser.disconnect();
+  } catch (e) {
+    // Ignore disconnect errors
+  }
+
+  // Reconnect based on enabled state
+  connectAudioChain();
+}
+
+function toggleVintageFilters() {
+  state.vintageFiltersEnabled = !state.vintageFiltersEnabled;
+
+  if (state.audioContext) {
+    reconnectAudioChain();
+  }
+
+  updateVintageToggleUI();
+  savePreferences();
+}
+
+function updateVintageToggleUI() {
+  if (vintageToggle) {
+    vintageToggle.textContent = state.vintageFiltersEnabled ? '📻 1937 ON' : '📻 1937 OFF';
+    vintageToggle.classList.toggle('active', state.vintageFiltersEnabled);
+  }
+}
+
+function handleIntensityChange(e) {
+  state.vintageIntensity = parseInt(e.target.value);
+  updateIntensityDisplay();
+  updateVintageIntensity();
+  savePreferences();
+}
+
+function updateIntensityDisplay() {
+  if (intensityDisplay) {
+    intensityDisplay.textContent = `${state.vintageIntensity}%`;
+  }
+}
+
+function updateVintageIntensity() {
+  if (!state.audioContext) return;
+
+  const intensity = state.vintageIntensity / 100; // 0-1 range
+
+  // Adjust filter characteristics based on intensity
+  if (state.filterNodes.highpass) {
+    // More intensity = more aggressive high-pass (remove more bass)
+    state.filterNodes.highpass.frequency.value = 300 + (intensity * 200); // 300-500 Hz
+  }
+
+  if (state.filterNodes.lowpass) {
+    // More intensity = more aggressive low-pass (muffle highs more)
+    state.filterNodes.lowpass.frequency.value = 3000 - (intensity * 1000); // 3000-2000 Hz
+  }
+
+  if (state.filterNodes.distortion) {
+    // More intensity = more distortion
+    const distortionAmount = 20 + (intensity * 80); // 20-100
+    state.filterNodes.distortion.curve = makeDistortionCurve(distortionAmount);
+  }
+
+  if (state.filterNodes.noiseGain) {
+    // More intensity = more background noise
+    const noiseLevel = 0.002 + (intensity * 0.018); // 0.002-0.02
+    state.filterNodes.noiseGain.gain.value = noiseLevel;
+  }
+
+  if (state.filterNodes.compressor) {
+    // More intensity = more compression
+    state.filterNodes.compressor.ratio.value = 8 + (intensity * 8); // 8-16
   }
 }
 
@@ -409,7 +623,9 @@ function savePreferences() {
   const prefs = {
     theme: state.theme,
     volume: state.volume,
-    currentIndex: state.currentIndex
+    currentIndex: state.currentIndex,
+    vintageFiltersEnabled: state.vintageFiltersEnabled,
+    vintageIntensity: state.vintageIntensity
   };
   localStorage.setItem('vintage-radio-prefs', JSON.stringify(prefs));
 }
@@ -432,6 +648,15 @@ function loadPreferences() {
 
       if (prefs.currentIndex !== undefined) {
         state.currentIndex = prefs.currentIndex;
+      }
+
+      if (prefs.vintageFiltersEnabled !== undefined) {
+        state.vintageFiltersEnabled = prefs.vintageFiltersEnabled;
+      }
+
+      if (prefs.vintageIntensity !== undefined) {
+        state.vintageIntensity = prefs.vintageIntensity;
+        if (intensitySlider) intensitySlider.value = prefs.vintageIntensity;
       }
     }
   } catch (e) {

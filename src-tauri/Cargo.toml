@@ -1,6 +1,6 @@
 [package]
 name = "vintage-radio"
-version = "1.0.0"
+version = "1.2.0"
 description = "A retro-style internet radio player"
 authors = ["Phil Jung"]
 edition = "2021"

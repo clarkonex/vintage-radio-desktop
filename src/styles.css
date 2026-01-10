@@ -483,6 +483,99 @@ body {
   transform: scale(1.2);
 }
 
+/* ===== 1937 VINTAGE RADIO FILTERS ===== */
+.vintage-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--display-bg);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.vintage-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.vintage-toggle {
+  background: var(--header-bg);
+  border: 2px solid var(--border-color);
+  color: var(--title-color);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.vintage-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.vintage-toggle.active {
+  background: var(--vu-green);
+  color: var(--display-bg);
+  border-color: var(--vu-green);
+  box-shadow: 0 0 12px var(--vu-green);
+}
+
+.intensity-display {
+  color: var(--title-color);
+  font-size: 14px;
+  font-weight: bold;
+  min-width: 40px;
+  text-align: right;
+  text-shadow: 0 0 8px var(--title-color);
+}
+
+.intensity-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.intensity-label {
+  color: var(--footer-color);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  min-width: 75px;
+}
+
+#intensity-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 6px;
+  background: var(--display-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+#intensity-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--vu-yellow);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+  box-shadow: 0 0 8px var(--vu-yellow);
+}
+
+#intensity-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 12px var(--vu-yellow);
+}
+
 /* ===== PLAYLIST ===== */
 .playlist-container {
   flex: 1;
