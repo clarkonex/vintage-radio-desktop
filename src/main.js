@@ -64,7 +64,7 @@ const state = {
 let audioPlayer, playlist, stationName, playTime, volumeDisplay, statusEl, nowPlayingEl;
 let playBtn, stopBtn, prevBtn, nextBtn, themeBtn, exitBtn, volumeSlider;
 let vuLeft, vuRight, speakerGrill;
-let vintageToggle, intensitySlider, intensityDisplay;
+let speakerToggle, speakerStatus, intensitySlider, intensityDisplay;
 
 // ===== INITIALIZATION =====
 function init() {
@@ -89,7 +89,8 @@ function init() {
   vuRight = document.getElementById('vu-right');
   speakerGrill = document.getElementById('speaker-grill');
 
-  vintageToggle = document.getElementById('vintage-toggle');
+  speakerToggle = document.getElementById('speaker-toggle');
+  speakerStatus = document.getElementById('speaker-status');
   intensitySlider = document.getElementById('intensity-slider');
   intensityDisplay = document.getElementById('intensity-display');
 
@@ -131,7 +132,7 @@ function setupEventListeners() {
   volumeSlider.addEventListener('input', handleVolumeChange);
 
   // Vintage Filters
-  vintageToggle.addEventListener('click', toggleVintageFilters);
+  speakerToggle.addEventListener('click', toggleVintageFilters);
   intensitySlider.addEventListener('input', handleIntensityChange);
 
   // Audio events
@@ -302,9 +303,9 @@ function toggleVintageFilters() {
 }
 
 function updateVintageToggleUI() {
-  if (vintageToggle) {
-    vintageToggle.textContent = state.vintageFiltersEnabled ? '📻 1937 ON' : '📻 1937 OFF';
-    vintageToggle.classList.toggle('active', state.vintageFiltersEnabled);
+  if (speakerStatus) {
+    speakerStatus.textContent = state.vintageFiltersEnabled ? '📻 ON' : '📻 OFF';
+    speakerStatus.classList.toggle('off', !state.vintageFiltersEnabled);
   }
 }
 
@@ -482,19 +483,20 @@ function updateVUMeters() {
   if (state.isPlaying && state.analyser && state.dataArray) {
     state.analyser.getByteFrequencyData(state.dataArray);
 
-    // Calculate average levels from frequency data
-    const len = state.dataArray.length;
-    let sumLeft = 0, sumRight = 0;
-
-    for (let i = 0; i < len / 2; i++) {
-      sumLeft += state.dataArray[i];
-    }
-    for (let i = len / 2; i < len; i++) {
-      sumRight += state.dataArray[i];
+    // Calculate total energy across all frequencies
+    let sum = 0;
+    for (let i = 0; i < state.dataArray.length; i++) {
+      sum += state.dataArray[i];
     }
 
-    levelLeft = Math.floor((sumLeft / (len / 2)) / 255 * 5);
-    levelRight = Math.floor((sumRight / (len / 2)) / 255 * 5);
+    // Scale to 0-5 range with more sensitivity
+    // Lower threshold: 50 per level instead of 200
+    const level = Math.min(5, Math.max(0, Math.floor(sum / 50)));
+
+    // For mono streams (most radio), show same level on both meters
+    // Add slight variation for visual effect
+    levelLeft = level;
+    levelRight = Math.max(0, level + (Math.random() > 0.5 ? -1 : 0));
   }
 
   // Update VU bars
