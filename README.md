@@ -1,16 +1,22 @@
 # Vintage Radio Desktop
 
-A retro-style internet radio player with a beautiful vintage UI.
+A retro-style internet radio player with a beautiful vintage UI and authentic 1937 radio filters.
 
 **Available for macOS, Linux, and Windows**
 
-![Vintage Radio Screenshot](screenshot.png)
+![Vintage Radio Screenshot](screenshots/vintage-radio-v1.2.0.png)
 
 ## Features
 
+### 🎵 Audio Experience
+- **1937 Vintage Radio Filters** — Authentic AM radio sound with tube distortion, bandwidth limiting, and background static
+- **Adjustable Intensity** — Fine-tune the vintage effect from subtle to full 1930s radio
+- **Interactive Speaker** — Click the speaker to toggle vintage effect on/off
+- **Real-time VU Meters** — Audio visualization with Web Audio API
+
+### 📻 Radio & Interface
 - **24 Pre-loaded Stations** — Jazz, Vintage, Funk & Groove, World Music
 - **8 Beautiful Themes** — Bakelite, Retro, Mint, Synthwave, Dracula, Gruvbox, Nord, Vintage Cream
-- **Real-time VU Meters** — Audio visualization with Web Audio API
 - **CRT Monitor Effect** — Vignette and rounded bezel for authentic retro feel
 - **Speaker Grill Design** — Classic radio aesthetics
 - **Keyboard Shortcuts** — Full keyboard control
@@ -56,7 +62,15 @@ npm run tauri build
 
 ## Usage
 
-### Keyboard Shortcuts
+### Controls
+
+**Mouse:**
+- Click speaker to toggle 1937 vintage effect
+- Use vertical slider on left of speaker to adjust vintage intensity
+- Click station in playlist to play
+- Use volume slider to adjust volume
+
+**Keyboard Shortcuts:**
 
 | Key | Action |
 |-----|--------|
